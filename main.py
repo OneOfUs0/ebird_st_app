@@ -224,7 +224,7 @@ def df_counties_select():
 try:
     st.set_page_config(page_title='Setup',
                        layout="wide",
-                       page_icon=':stopwatch:',
+                       page_icon=':baby_chick:',
                        menu_items={'About': 'Created by OneOfUs0, June 2024',
                                    'Get Help': 'https://somafm.com/dronezone/'},
                        initial_sidebar_state = "collapsed"
