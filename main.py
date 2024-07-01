@@ -265,9 +265,9 @@ try:
                              )
 
         with col2:
-            st.header('Select a speceis in the region.')
+            st.header('Select the Species')
 
-            st.text_input('Type species common name below',
+            st.text_input('Type species common name below and hit enter.',
                           key='txtSppName',
                           help='Type species name as you know it and hit Enter to search for that.',
                           on_change=txtSppName_change
@@ -283,7 +283,7 @@ try:
 
 
         with col3:
-            st.header('Filters')
+            st.header('Query Filter')
             st.subheader('State: ' + st.session_state.selected_state)
             st.subheader('County: ' + st.session_state.selected_county)
             st.subheader('Species: ' + st.session_state.selected_species)
