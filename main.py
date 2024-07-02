@@ -170,18 +170,15 @@ def txtSppName_change():
 
 def df_Species_select():
     try:
-
         adict = st.session_state.df_Species
-        idx = adict['selection']['rows'][0]
 
-        if idx != '':
+        if len(adict['selection']['rows']):
+            idx = adict['selection']['rows'][0]
             sppcode = st.session_state.df_species[idx]['Code']
         else:
             sppcode = ''
 
         st.session_state.selected_species = sppcode
-
-        print('Selected: ' + str(st.session_state.species_select))
 
     except:
         ExceptHandler()
@@ -261,7 +258,7 @@ try:
 
         col1, space1, col2, space2, col3 = st.columns([6,1,5,1,3])
         with col1:
-            st.header('Select a Region')
+            st.header('Define Geographic Area')
 
             subcol1, subcol2 = st.columns([2,2])
             with subcol1:
@@ -285,7 +282,7 @@ try:
                              )
 
         with col2:
-            st.header('Select the Species')
+            st.header('Define the Species')
 
             st.text_input('Type species common name below and hit enter.',
                           key='txtSppName',
@@ -302,7 +299,7 @@ try:
                          on_select=df_Species_select)
 
         with col3:
-            st.header('Query Filter')
+            st.header('Query EBIRD')
             st.subheader('State: ' + st.session_state.selected_state)
             st.subheader('Counties: ' + st.session_state.selected_counties)
             st.subheader('Species: ' + st.session_state.selected_species)
