@@ -36,6 +36,9 @@ if 'selected_state' not in st.session_state:
     st.session_state.selected_state = ''
 if 'selected_county' not in st.session_state:
     st.session_state.selected_county = ''
+if 'selected_counties' not in st.session_state:
+    st.session_state.selected_counties = ''
+
 if 'selected_species' not in st.session_state:
     st.session_state.selected_species = ''
 
@@ -195,6 +198,10 @@ def df_states_select():
 
         st.session_state.selected_state = state
 
+        # clear any previously selected counties.
+        st.session_state.selected_county = ''
+        st.session_state.selected_counties = ''
+
         print('Selected: ' + str(st.session_state.selected_state))
 
         # call to get the counties for this state
@@ -205,15 +212,22 @@ def df_states_select():
 def df_counties_select():
 
     try:
+
         adict = st.session_state.df_counties
-        idx = adict['selection']['rows'][0]
 
-        if idx != '':
-            county = st.session_state.counties[idx]['code']
+        counties = []
+        if len(adict['selection']['rows']) > 10:
+
+            st.warning('The query has a maximum of 10 counties.')
+
         else:
-            county = ''
+            for idx in adict['selection']['rows']:
+                county = st.session_state.counties[idx]['code']
+                counties.append(county)
 
-        st.session_state.selected_county = county
+        st.session_state.selected_county = counties
+        st.session_state.selected_counties = ','.join(counties)
+
 
         print('Selected: ' + str(st.session_state.selected_county))
 
@@ -236,9 +250,10 @@ try:
 
         PPH = '''
         **Instructions**  
-        Retrieve obseravation records from EBIRD by specifying the query filter below.  Select a State, then a County, then type the common
-        name and choose the species from the list.   Click Query EBIRD.   Any results returned will display in the table at the bottom of the page.  
-        You can save the records in the table by using the Download as CSV at the upper right corner of the table.
+        Use this to retrieve obseravation records from EBIRD.  First define the query below by selecting a ***state*** and one or several ***counties***.  Next, 
+        type the species common
+        name and choose the species from the list.   Click ***Query EBIRD***.   Any results returned will displayed in the table at the bottom of the page. 
+        Save the records in the table by using the ***Download as CSV*** at the upper right corner of the table.
         '''
         st.title('EBIRD')
         st.markdown(PPH)
@@ -251,13 +266,18 @@ try:
             subcol1, subcol2 = st.columns([2,2])
             with subcol1:
                 st.subheader('State')
+                st.markdown('''Select one.
+                ''')
                 st.dataframe(st.session_state.usastates,
                              key='df_states',
+                             selection_mode='single-row',
                              on_select=df_states_select)
 
 
             with subcol2:
-                st.subheader('County')
+                st.subheader('Counties')
+                st.markdown('''Select up to 10.
+                ''')
                 disable_counties = not bool(st.session_state.selected_state)
                 st.dataframe(st.session_state.counties,
                              key='df_counties',
@@ -281,11 +301,10 @@ try:
                          key='df_Species',
                          on_select=df_Species_select)
 
-
         with col3:
             st.header('Query Filter')
             st.subheader('State: ' + st.session_state.selected_state)
-            st.subheader('County: ' + st.session_state.selected_county)
+            st.subheader('Counties: ' + st.session_state.selected_counties)
             st.subheader('Species: ' + st.session_state.selected_species)
 
             disable_button = True
@@ -299,6 +318,10 @@ try:
                       help='Click to execute your query.',
                       disabled=disable_button,
                       on_click=btnQuery_click)
+
+            if len(st.session_state.query_records):
+                count = len(st.session_state.query_records)
+                st.success('Got ' + str(count) + ' Records (scroll down to view)')
 
 
             # if st.session_state.downloadfilename != '':
