@@ -334,7 +334,7 @@ try:
 
     with st.container(): # BOTTOM CONTAINER
 
-        st.subheader('Query Results')
+        st.subheader('Observation Records')
 
         st.dataframe(st.session_state.query_records,
                      key='df_query_records',
