@@ -444,6 +444,7 @@ try:
             with col2:
                 st.markdown('''Listed below are other species also noted with this sighting.''')
 
+
                 st.dataframe(st.session_state.obs_checklist_obs,
                              use_container_width=True)
 
