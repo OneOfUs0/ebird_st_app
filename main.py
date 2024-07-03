@@ -318,7 +318,9 @@ try:
 
             if len(st.session_state.query_records):
                 count = len(st.session_state.query_records)
-                st.success('Got ' + str(count) + ' Records (scroll down to view)')
+                st.success('Retrieved ' + str(count) + ' Records (scroll down to view)')
+            else:
+                st.warning('No records found.')
 
 
             # if st.session_state.downloadfilename != '':
