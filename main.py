@@ -256,12 +256,20 @@ def df_query_records_select():
     try:
 
         adict = st.session_state.df_query_records # the widget
-        idx = adict['selection']['rows'][0]
-        print('selected row ' + str(idx))
+        x = adict['selection']['rows']
 
         subid = ''
-        if idx != '':
-            subid = st.session_state.query_records[idx]['subId']
+        st.session_state.obs_checklist = [] # clear this that the user must run Get Checklist.
+
+        if len(x) == 0:
+            st.session_state.obs_checklist = []
+
+        else:
+
+            idx = adict['selection']['rows'][0]
+            print('selected row ' + str(idx))
+            if idx != '':
+                subid = st.session_state.query_records[idx]['subId']
 
         st.session_state.selected_subid = subid
 
@@ -399,7 +407,11 @@ try:
 
             st.subheader('Single Observation Details')
 
-            st.button('Get Checklist',
+            if st.session_state.selected_subid == '':
+                st.markdown('''Select a record from the ***Observation Records*** table above.
+                ''')
+
+            st.button('Get Details',
                       type='primary',
                       key='btn_Checklist',
                       help='Get checklist information for the selected record.',
