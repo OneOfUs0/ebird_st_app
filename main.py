@@ -175,7 +175,9 @@ def btnQuery_click():
     try:
         GetObseravations()
 
-
+        # clear for the details dataframe.
+        st.session_state.selected_subid = ''
+        st.session_state.obs_checklist = []
 
     except:
         ExceptHandler()
