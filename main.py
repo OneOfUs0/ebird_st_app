@@ -65,6 +65,8 @@ if 'selected_subid' not in st.session_state:
 
 if 'obs_checklist' not in st.session_state:
     st.session_state.obs_checklist = []
+if 'obs_checklist_obs' not in st.session_state:
+    st.session_state.obs_checklist_obs = []
 
 st.session_state.just_ran_query = False  # default
 
@@ -158,6 +160,12 @@ def GetChecklistInfo(chklistid:str):
 
         st.session_state.obs_checklist = chklist
 
+        # mine the list of dicts out of the obs field:
+
+        obslist = chklist['obs']
+        st.session_state.obs_checklist_obs = obslist
+
+
 
     except:
         ExceptHandler()
@@ -178,6 +186,7 @@ def btnQuery_click():
         # clear for the details dataframe.
         st.session_state.selected_subid = ''
         st.session_state.obs_checklist = []
+        st.session_state.obs_checklist_obs = []
 
     except:
         ExceptHandler()
@@ -211,30 +220,27 @@ def df_Species_select():
 def df_states_select():
     try:
         adict = st.session_state.df_states
-        idx = adict['selection']['rows'][0]
 
-        if idx != '':
+        state = ''
+        if len(adict['selection']['rows']):
+            idx = adict['selection']['rows'][0]
             state = st.session_state.usastates[idx]['code']
-        else:
-            state = ''
-
         st.session_state.selected_state = state
 
         # clear any previously selected counties.
         st.session_state.selected_county = ''
         st.session_state.selected_counties = ''
 
-        print('Selected: ' + str(st.session_state.selected_state))
-
         # call to get the counties for this state
-        GetCounties()
+        if st.session_state.selected_state != '':
+            print('Selected: ' + str(st.session_state.selected_state))
+            GetCounties()
     except:
         ExceptHandler()
 
 def df_counties_select():
 
     try:
-
         adict = st.session_state.df_counties
 
         counties = []
@@ -247,7 +253,6 @@ def df_counties_select():
 
         st.session_state.selected_county = counties
         st.session_state.selected_counties = ','.join(counties)
-
 
         print('Selected: ' + str(st.session_state.selected_county))
 
@@ -265,9 +270,10 @@ def df_query_records_select():
 
         if len(x) == 0:
             st.session_state.obs_checklist = []
+            st.session_state.obs_checklist_obs = []
 
         else:
-
+            st.session_state.obs_checklist_obs = []
             idx = adict['selection']['rows'][0]
             print('selected row ' + str(idx))
             if idx != '':
@@ -402,12 +408,9 @@ try:
                      on_select=df_query_records_select
                      )
 
-        col1, col2 = st.columns([4,10])
-
-        with col1:
-            st.divider()
-
-            st.subheader('Single Observation Details')
+        st.divider()
+        st.subheader('Single Observation Details')
+        with st.container():
 
             if st.session_state.selected_subid == '':
                 st.markdown('''Select a record from the ***Observation Records*** table above.
@@ -420,19 +423,30 @@ try:
                       disabled=bool(st.session_state.selected_subid == ''),
                       on_click=btn_Checklist_click)
 
-            if st.session_state.selected_subid != '':
+            col1, col2 = st.columns([4,10])
 
-                subcol1, subcol2 = st.columns([6,5])
-                with subcol1:
-                    st.markdown('''
-                    Observation ***Checklist*** Information for
-                    ''')
-                with subcol2:
-                    st.subheader(st.session_state.selected_subid)
+            with col1:
 
-                st.dataframe(st.session_state.obs_checklist,
-                             use_container_width=True,
-                             key='df_checklist')
+                if st.session_state.selected_subid != '':
+
+                    subcol1, subcol2 = st.columns([6,5])
+                    with subcol1:
+                        st.markdown('''
+                        Observation ***Checklist*** Information for
+                        ''')
+                    with subcol2:
+                        st.subheader(st.session_state.selected_subid)
+
+                    st.dataframe(st.session_state.obs_checklist,
+                                 use_container_width=True,
+                                 key='df_checklist')
+
+            with col2:
+                st.markdown('''Listed below are other species also noted with this sighting.''')
+
+                st.dataframe(st.session_state.obs_checklist_obs,
+                             use_container_width=True)
+
 
 except:
     ExceptHandler()
