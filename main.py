@@ -5,6 +5,8 @@ from ebird.api import get_observations
 from ebird.api import get_regions, get_adjacent_regions, get_region
 from ebird.api import get_taxonomy, get_taxonomy_forms, get_taxonomy_versions
 
+from ebird.api import get_visits, get_checklist
+
 from ebird.api import get_notable_observations, get_nearby_notable, \
     get_species_observations, get_nearby_species
 
@@ -53,10 +55,18 @@ if 'query_records' not in st.session_state:
     st.session_state.query_records = []
 if 'query_result_excel' not in st.session_state:
     st.session_state.query_result_excel = ''
+if 'jsut_ran_query' not in st.session_state:
+    st.session_state.just_ran_query = False
 
 if 'downloadfilename' not in st.session_state:
     st.session_state.downloadfilename = ''
+if 'selected_subid' not in st.session_state:
+    st.session_state.selected_subid = ''
 
+if 'obs_checklist' not in st.session_state:
+    st.session_state.obs_checklist = []
+
+st.session_state.just_ran_query = False  # default
 
 # ====== FUNCTIONS ======================================================
 
@@ -127,7 +137,9 @@ def GetObseravations():
         st.session_state.query_records = records
 
         # to Pandas Dataframe
-        pDf = pd.DataFrame(records)
+        #pDf = pd.DataFrame(records)
+
+        st.session_state.just_ran_query = True
 
 
         # # to Excel
@@ -140,7 +152,15 @@ def GetObseravations():
 
     except:
         ExceptHandler()
+def GetChecklistInfo(chklistid:str):
+    try:
+        chklist = get_checklist(api_key,chklistid)
 
+        st.session_state.obs_checklist = chklist
+
+
+    except:
+        ExceptHandler()
 # def Download_save():
 #     try:
 #         st.session_state.queryresult = pdf
@@ -154,6 +174,9 @@ def GetObseravations():
 def btnQuery_click():
     try:
         GetObseravations()
+
+
+
     except:
         ExceptHandler()
 
@@ -214,9 +237,7 @@ def df_counties_select():
 
         counties = []
         if len(adict['selection']['rows']) > 10:
-
             st.warning('The query has a maximum of 10 counties.')
-
         else:
             for idx in adict['selection']['rows']:
                 county = st.session_state.counties[idx]['code']
@@ -227,6 +248,31 @@ def df_counties_select():
 
 
         print('Selected: ' + str(st.session_state.selected_county))
+
+    except:
+        ExceptHandler()
+
+def df_query_records_select():
+    try:
+
+        adict = st.session_state.df_query_records # the widget
+        idx = adict['selection']['rows'][0]
+        print('selected row ' + str(idx))
+
+        subid = ''
+        if idx != '':
+            subid = st.session_state.query_records[idx]['subId']
+
+        st.session_state.selected_subid = subid
+
+    except:
+        ExceptHandler()
+def btn_Checklist_click():
+    try:
+
+        #recid = 'S183888820'
+
+        GetChecklistInfo(st.session_state.selected_subid)
 
     except:
         ExceptHandler()
@@ -306,7 +352,7 @@ try:
 
             disable_button = True
             if bool(st.session_state.selected_species):
-                if bool(st.session_state.selected_county) or bool(st.session_state.selected_state):
+                if bool(st.session_state.selected_county) and bool(st.session_state.selected_state):
                     disable_button = False
 
             st.button('Query EBIRD',
@@ -316,11 +362,12 @@ try:
                       disabled=disable_button,
                       on_click=btnQuery_click)
 
-            if len(st.session_state.query_records):
-                count = len(st.session_state.query_records)
-                st.success('Retrieved ' + str(count) + ' Records (scroll down to view)')
-            else:
-                st.warning('No records found.')
+            if True: #st.session_state.just_ran_query:
+                if len(st.session_state.query_records):
+                    count = len(st.session_state.query_records)
+                    st.success('Retrieved ' + str(count) + ' Records (scroll down to view)')
+                else:
+                    st.error('No records found.')
 
 
             # if st.session_state.downloadfilename != '':
@@ -340,7 +387,38 @@ try:
 
         st.dataframe(st.session_state.query_records,
                      key='df_query_records',
-                     use_container_width=True)
+                     use_container_width=True,
+                     selection_mode='single-row',
+                     on_select=df_query_records_select
+                     )
+
+        col1, col2 = st.columns([4,10])
+
+        with col1:
+            st.divider()
+
+            st.subheader('Single Observation Details')
+
+            st.button('Get Checklist',
+                      type='primary',
+                      key='btn_Checklist',
+                      help='Get checklist information for the selected record.',
+                      disabled=bool(st.session_state.selected_subid == ''),
+                      on_click=btn_Checklist_click)
+
+            if st.session_state.selected_subid != '':
+
+                subcol1, subcol2 = st.columns([6,5])
+                with subcol1:
+                    st.markdown('''
+                    Observation ***Checklist*** Information for
+                    ''')
+                with subcol2:
+                    st.subheader(st.session_state.selected_subid)
+
+                st.dataframe(st.session_state.obs_checklist,
+                             use_container_width=True,
+                             key='df_checklist')
 
 except:
     ExceptHandler()
