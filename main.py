@@ -298,7 +298,7 @@ try:
     st.set_page_config(page_title='Setup',
                        layout="wide",
                        page_icon=':baby_chick:',
-                       menu_items={'About': 'Created by OneOfUs0, June 2024',
+                       menu_items={'About': 'Created by OneOfUs0, July 2024',
                                    'Get Help': 'https://somafm.com/dronezone/'},
                        initial_sidebar_state = "collapsed"
                        )
@@ -378,12 +378,20 @@ try:
                       disabled=disable_button,
                       on_click=btnQuery_click)
 
+
+
             if True: #st.session_state.just_ran_query:
                 if len(st.session_state.query_records):
                     count = len(st.session_state.query_records)
                     st.success('Retrieved ' + str(count) + ' Records (scroll down to view)')
+
+                    st.page_link('pages/mapview.py',
+                                 label='Show on a map',
+                                 disabled=len(st.session_state.query_records) == 0)
                 else:
                     st.error('No records found.')
+
+
 
 
             # if st.session_state.downloadfilename != '':
