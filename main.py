@@ -133,7 +133,7 @@ def GetObseravations():
             region = st.session_state.selected_state
 
         # query
-        records = get_species_observations(api_key, sppname, region)
+        records = get_species_observations(api_key, sppname, region, back=30)
         print('Got ' + str(len(records)) + ' observation records.')
 
         st.session_state.query_records = records
